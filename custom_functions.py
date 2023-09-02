@@ -5,8 +5,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import LassoCV, Lasso
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors
+import xgboost as xgb
 
 def calculate_descriptors(smiles):
     mol = Chem.MolFromSmiles(smiles)
