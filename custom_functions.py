@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LassoCV, Lasso
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors
-import xgboost as xgb
+
 
 def calculate_descriptors(smiles):
     mol = Chem.MolFromSmiles(smiles)

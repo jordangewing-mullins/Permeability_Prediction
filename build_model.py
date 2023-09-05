@@ -1,19 +1,16 @@
 import tensorflow as tf
 from tensorflow.keras.regularizers import l2
 import matplotlib.pyplot as plt
-from sklearn.ensemble import BaggingRegressor
 from sklearn.model_selection import RandomizedSearchCV
 from custom_functions import * 
-from scipy.stats import randint
+from scipy.stats import randint     
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
 import pickle
 
+# Read in the data from the CSV generated in Exploratory_data_analysis.py
+df_to_feed_into_models = pd.read_csv('cleaned_up_and_featurized_data.csv',index_col=0)
 
-from Exploratory_data_analysis import filtered_df
-df_to_feed_into_models = filtered_df.copy()
-
-print(df_to_feed_into_models.head())
 def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     """
     Build and train a Lasso regression model with feature selection and hyperparameter tuning.
@@ -42,8 +39,8 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
 
     # Create a range of alpha values to test
     alphas = np.logspace(-6, 2, 100)
-    # Initialize LassoCV with 5-fold cross-validation
-    lasso_cv = LassoCV(alphas=alphas, cv=5, verbose=False)  
+    # Initialize LassoCV with 4-fold cross-validation
+    lasso_cv = LassoCV(alphas=alphas, cv=4, verbose=False)  
     # Fit LassoCV to the scaled training data
     lasso_cv.fit(X_train_scaled, y_train)
     # Get the selected alpha
@@ -55,13 +52,11 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     # Get the selected features
     coef = lasso_model.coef_
     selected_features = [predictors[i] for i in range(len(predictors)) if coef[i] != 0]
-    print("Selected features:", selected_features)
 
     # Evaluate the model's performance on the test data
     y_pred = lasso_model.predict(X_test_scaled)
     mse = mean_squared_error(y_test, y_pred)
-    r_squared = lasso_model.score(X_test_scaled, y_test)
-
+    r_squared = r2_score(y_test, y_pred)
     return (lasso_model, r_squared, mse)
 
 

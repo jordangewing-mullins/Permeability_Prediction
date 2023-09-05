@@ -1,9 +1,7 @@
 # Exploratory data visualizations
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from scipy import stats
 from custom_functions import * 
+from scipy import stats
 
 # Import the file
 file_path = 'perm.tsv'
@@ -216,3 +214,7 @@ if __name__ == "__main__":
     filtered_df = filtered_df.drop(columns=columns_to_remove)
     print(filtered_df)
 
+    df_to_feed_into_models = filtered_df.copy() 
+    # I wanted to pass this variable directly to the build_model.py file, but I was having issues with that.
+    # so I decided to just save the data into a new CSV and open it when building the model.
+    df_to_feed_into_models.to_csv('cleaned_up_and_featurized_data.csv')
