@@ -7,52 +7,13 @@ from custom_functions import *
 from scipy.stats import randint
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
-
-# Import the file
-file_path = 'perm.tsv'
-df = pd.read_csv(file_path, delimiter='\t')
+import pickle
 
 
-def add_features(df: pd.DataFrame):
-    """In this fucntion we can apply all of the relevant RDKit descriptors to each molecule, returning a 
-    dataframe with more features than can be used to build a predictive model
-    
-    Parameters:
-    - df (DataFrame): The input DataFrame containing the raw data, as well as the target variable.
+from Exploratory_data_analysis import filtered_df
+df_to_feed_into_models = filtered_df.copy()
 
-    Returns:
-    - df (DataFrame): An updated DataFrame that includes 2000+ features off of which we can train our models
-
-    """
-    descriptor_columns = df['canonical_smiles'].apply(calculate_descriptors)
-    df = pd.concat([df, descriptor_columns], axis=1)
-    return df
-
-def visualize_featurized_data(df: pd.DataFrame):
-    return
-
-def transform_features(df: pd.DataFrame):
-    """This function logs right skewed data and returns the new corresponding dataframe.
-
-    Parameters:
-    - df (DataFrame): The input DataFrame containing relevant and other predictors, as well as the target variable.
-    
-    Returns:
-    - df_new (DataFrame): A new DataFrame with tranformed values
-    """
-
-    df['tpsa_transformed'] = np.log1p(df['tpsa'])
-    df['mol_weight_transformed'] = np.log1p(df['mol_weight'])
-
-    df_new = df.copy()
-    df_new['log_Papp_in_cm_sec'] = np.log(df['Papp_in_cm_sec'])
-    columns_to_remove = ['Papp_in_cm_sec','mol_weight', 'tpsa','fingerprint', 'canonical_smiles','molregno']
-    df_new = df_new.drop(columns=columns_to_remove)
-    return df_new
-
-# Make the dataframe to feed into each model
-df_to_feed_into_models = (transform_features(add_features(df)))
-
+print(df_to_feed_into_models.head())
 def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     """
     Build and train a Lasso regression model with feature selection and hyperparameter tuning.
@@ -61,7 +22,14 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     - df_to_feed_into_models (pd.DataFrame): The input DataFrame containing predictors and target variable.
 
     Returns:
-    - Tuple[float, float]: A tuple containing the R-squared and Mean Squared Error (MSE) achieved by the Lasso model.
+    - Tuple[object, float, float]: A tuple containing the model, R-squared and Mean Squared Error (MSE).
+
+    This function takes a DataFrame as input, extracts the predictors and target variable,
+    performs data preprocessing including standardization, conducts hyperparameter tuning using LassoCV,
+    fits a Lasso regression model, and returns the model along with evaluation metrics.
+
+    Example usage:
+    lasso_model, r_squared, mse = build_lasso_regression_model(df)
     """
     predictors = [col for col in df_to_feed_into_models.columns if col not in ['log_Papp_in_cm_sec']]
     X = df_to_feed_into_models[predictors]
@@ -69,6 +37,7 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=84)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
+
     X_test_scaled = scaler.transform(X_test)
 
     # Create a range of alpha values to test
@@ -102,11 +71,17 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
 
     Parameters:
     - df_to_feed_into_models (pd.DataFrame): The input DataFrame containing predictors and target variable.
+    - interactions (bool, optional): If True, consider interaction terms between non-fingerprint predictors.
 
     Returns:
-    - Tuple[float, float]: A tuple containing the best R-squared and Mean Squared Error (MSE) achieved
+    - Tuple[object, float, float]: A tuple containing the best model,  R-squared and Mean Squared Error (MSE) achieved
       by the Random Forest model.
 
+    This function builds and trains a Random Forest regression model with optional interaction term consideration.
+    It performs hyperparameter tuning using RandomizedSearchCV and returns the best model along with evaluation metrics.
+
+    Example usage:
+    best_model, r_squared, mse = build_random_forest_model(df)
     """
     predictors = [col for col in df_to_feed_into_models.columns if col not in ['log_Papp_in_cm_sec']]
     X = df_to_feed_into_models[predictors]
@@ -116,18 +91,17 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=84)
     
     else:
-        print("examining interactions between non-fingerprint terms")
         # Here I'm making a subset of predictors that exclude all the chemical fingerprints 
-        relevant_predictors = ['num_rotatable_bonds',
-                               'num_hydrogen_bond_donors',
-                               'num_hydrogen_bond_acceptors',
+        relevant_predictors = ['num_rotatable_bonds_Transformed',
+                               'num_hydrogen_bond_donors_Transformed',
+                               'num_hydrogen_bond_acceptors_Transformed',
                                'logp',
-                               'num_rings',
-                               'num_aromatic_rings',
-                               'num_het_atoms',
-                               'MaxPartialCharge',
-                               'tpsa_transformed',
-                               'mol_weight_transformed']
+                               'num_rings_Transformed',
+                               'num_aromatic_rings_Transformed',
+                               'num_het_atoms_Transformed',
+                               'MaxPartialCharge_Transformed',
+                               'tpsa_Transformed',
+                               'mol_weight_Transformed']
         X_relevant = df_to_feed_into_models[relevant_predictors]
 
         # Initialize the PolynomialFeatures transformer
@@ -143,7 +117,7 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
         
         # Create a DataFrame from the transformed features
         df_interactions = pd.DataFrame(X_interactions, columns=interaction_feature_names)
-        
+    
         only_the_interactions = df_interactions.drop(columns=relevant_predictors)
 
         # Combine the original predictors with the interaction features
@@ -207,8 +181,22 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
 
 
 def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, interactions=False):
-    """Start by not exploring any interaction terms by default"""
+    """
+    Build and train an ensemble model combining Gradient Boosting and Random Forest regressors.
 
+    Parameters:
+    - df_to_feed_into_models (pd.DataFrame): The input DataFrame containing predictors and target variable.
+    - interactions (bool, optional): If True, consider interaction terms between non-fingerprint predictors.
+
+    Returns:
+    - Tuple[object, float, float]: A tuple containing the ensemble model, R-squared, and Mean Squared Error (MSE).
+
+    This function builds and trains an ensemble model that combines Gradient Boosting and Random Forest regressors.
+    It can consider interaction terms if specified and returns the ensemble model along with evaluation metrics.
+
+    Example usage:
+    ensemble_model, r_squared, mse = ensemble_gradient_plus_random_forest(df)
+    """
     predictors = [col for col in df_to_feed_into_models.columns if col not in ['log_Papp_in_cm_sec']]
     X = df_to_feed_into_models[predictors]
     y = df_to_feed_into_models['log_Papp_in_cm_sec']
@@ -216,19 +204,21 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
     # These two if statements make different dataframes to feed into the ensemble model based on whether or not we want to explore interaction terms
     if not interactions:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=84)
+        scaler_filename = 'scaler_ensemble_no_interactions.pkl'
 
     elif interactions:
         print("examining interactions between non-fingerprint terms")
          # Here I'm making a subset of predictors that exclude all the chemical fingerprints 
-        relevant_predictors = ['num_rotatable_bonds',
-        'num_hydrogen_bond_donors',
-        'num_hydrogen_bond_acceptors',
-        'logp',
-        'num_rings',
-        'num_aromatic_rings',
-        'num_het_atoms',
-        'MaxPartialCharge',
-        'tpsa_transformed','mol_weight_transformed']
+        relevant_predictors = ['num_rotatable_bonds_Transformed',
+                               'num_hydrogen_bond_donors_Transformed',
+                               'num_hydrogen_bond_acceptors_Transformed',
+                               'logp',
+                               'num_rings_Transformed',
+                               'num_aromatic_rings_Transformed',
+                               'num_het_atoms_Transformed',
+                               'MaxPartialCharge_Transformed',
+                               'tpsa_Transformed',
+                               'mol_weight_Transformed']
         X_relevant = df_to_feed_into_models[relevant_predictors]
 
         # Initialize the PolynomialFeatures transformer
@@ -251,11 +241,16 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
         df_combined = pd.concat([X, only_the_interactions], axis=1)
 
         X_train, X_test, y_train, y_test = train_test_split(df_combined, y, test_size=0.3, random_state=84)
+        scaler_filename = 'scaler_ensemble_interactions.pkl'
 
     # Standardize the features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    
+    # Save the scaler to a file:
+    with open(scaler_filename, 'wb') as scaler_file:
+        pickle.dump(scaler, scaler_file)
     
     # Train the Gradient Boosting model
     gb_model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=84)
@@ -277,9 +272,6 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
     # Evaluate the ensemble model's performance
     ensemble_r_squared = r2_score(y_test, ensemble_predictions)
     ensemble_mse = mean_squared_error(y_test, ensemble_predictions)
-
-    print('ensemble_r_squared', ensemble_r_squared)
-    print('ensemble_mse', ensemble_mse)
     return (ensemble_model, ensemble_r_squared, ensemble_mse)
 
 
@@ -288,10 +280,10 @@ def build_gradient_boosting_model(df_to_feed_into_models: pd.DataFrame):
     Build and train a Gradient Boosting regression model with hyperparameter tuning.
 
     Parameters:
-    - df_to_feed_into_models (pd.DataFrame): The input DataFrame containing predictors and target variable.
+    - df_to_feed_into_models (pd.DataFrame): The input DataFrame containing predictors and the target variable.
 
     Returns:
-    - Tuple[float, float]: A tuple containing the R-squared and Mean Squared Error (MSE) achieved by the Gradient Boosting model.
+    - Tuple[object, float, float]: A tuple containing the trained Gradient Boosting model, R-squared, and Mean Squared Error (MSE).
     """
     predictors = [col for col in df_to_feed_into_models.columns if col not in ['log_Papp_in_cm_sec']]
     X = df_to_feed_into_models[predictors]
@@ -328,21 +320,23 @@ def build_neural_net(df_to_feed_into_models: pd.DataFrame, l2_penalty=None):
     Build and train a neural network model.
 
     Parameters:
-    - df_new (DataFrame): The input DataFrame containing relevant and other predictors, as well as the target variable.
+    - df_to_feed_into_models (DataFrame): The input DataFrame containing relevant and other predictors, as well as the target variable.
 
     Returns:
-    - Tuple[float, float]: A tuple containing the R-squared score and mean squared error of the trained neural network model.
+    - Tuple[object, float, float]: A tuple containing the R-squared score and mean squared error of the trained neural network model.
     """
 
     # Here I'm making a subset of predictors that exclude all the chemical fingerprints 
-    relevant_predictors = ['num_rotatable_bonds',
-    'num_hydrogen_bond_donors',
-    'num_hydrogen_bond_acceptors',
-    'logp',
-    'num_rings',
-    'num_aromatic_rings',
-    'num_het_atoms',
-    'MaxPartialCharge']
+    relevant_predictors = ['num_rotatable_bonds_Transformed',
+                               'num_hydrogen_bond_donors_Transformed',
+                               'num_hydrogen_bond_acceptors_Transformed',
+                               'logp',
+                               'num_rings_Transformed',
+                               'num_aromatic_rings_Transformed',
+                               'num_het_atoms_Transformed',
+                               'MaxPartialCharge_Transformed',
+                               'tpsa_Transformed',
+                               'mol_weight_Transformed']
 
     # Here I'm storing all the predictors that are chemical fingerprints
     # other_predictors = [col for col in df_to_feed_into_models.columns if col not in relevant_predictors]
@@ -388,7 +382,6 @@ def build_neural_net(df_to_feed_into_models: pd.DataFrame, l2_penalty=None):
 
         # Train the neural network
         model.fit(X_train_combined_tf, y_train_tf, epochs=100, batch_size=32, verbose=1, validation_split=0.2)
-        model.save("neural_net_permeability.h5")
 
         # Evaluate the model on the test data
         mse_nn = model.evaluate(X_test_combined_tf, y_test_tf)
@@ -396,7 +389,7 @@ def build_neural_net(df_to_feed_into_models: pd.DataFrame, l2_penalty=None):
 
         y_pred_nn = model.predict(X_test_combined_tf)
         r_squared_nn = r2_score(y_test, y_pred_nn)
-        print(f"R squared: {r_squared_nn}")
+        return (model, r_squared_nn, mse_nn)
 
     else:
         # Define a list of l2_penalty values to test
@@ -468,24 +461,15 @@ def build_neural_net(df_to_feed_into_models: pd.DataFrame, l2_penalty=None):
             y_pred_nn = model.predict(X_test_combined_tf)
             r_squared_nn = r2_score(y_test, y_pred_nn)
             print(f"R squared: {r_squared_nn}")
-
-        print("best_l2_penalty ", best_l2_penalty)
             
-
     return (model, r_squared_nn, mse_nn)
 
 
-
-# Build all the relevant models and store their accuracy metrics
-all_model_metrics_dict = {"Gradient Boosting Model": build_gradient_boosting_model(df_to_feed_into_models), "Ensemble: Gradient Boosting, Random Forest (interactions considered)":ensemble_gradient_plus_random_forest(df_to_feed_into_models, interactions=True),"Ensemble: Gradient Boosting, Random Forest (no interactions considered)":ensemble_gradient_plus_random_forest(df_to_feed_into_models), "Random Forest": build_random_forest_model(df_to_feed_into_models), "Neural Net": build_neural_net(df_to_feed_into_models), "LASSO regression": build_lasso_regression_model(df_to_feed_into_models) }
-all_model_metrics = pd.DataFrame.from_dict(all_model_metrics_dict, orient='index', columns=['Model','R-squared', 'MSE'])
-all_model_metrics.reset_index(inplace=True)
-all_model_metrics.rename(columns={'index': 'Model Type'}, inplace=True)
-all_model_metrics = all_model_metrics.sort_values(by='R-squared', ascending=False)
-print(all_model_metrics)
-
-
-
-
-
-
+if __name__ == "__main__":
+    # Build all the relevant models and store their accuracy metrics
+    all_model_metrics_dict = {"Gradient Boosting Model": build_gradient_boosting_model(df_to_feed_into_models), "Ensemble: Gradient Boosting, Random Forest (interactions considered)":ensemble_gradient_plus_random_forest(df_to_feed_into_models, interactions=True),"Ensemble: Gradient Boosting, Random Forest (no interactions considered)":ensemble_gradient_plus_random_forest(df_to_feed_into_models), "Random Forest": build_random_forest_model(df_to_feed_into_models), "Neural Net": build_neural_net(df_to_feed_into_models), "LASSO regression": build_lasso_regression_model(df_to_feed_into_models) }
+    all_model_metrics = pd.DataFrame.from_dict(all_model_metrics_dict, orient='index', columns=['Model','R-squared', 'MSE'])
+    all_model_metrics.reset_index(inplace=True)
+    all_model_metrics.rename(columns={'index': 'Model Type'}, inplace=True)
+    all_model_metrics = all_model_metrics.sort_values(by='R-squared', ascending=False)
+    print(all_model_metrics)

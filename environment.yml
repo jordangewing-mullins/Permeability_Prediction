@@ -15,31 +15,52 @@ dependencies:
   - blas=2.117=openblas
   - blas-devel=3.9.0=17_osxarm64_openblas
   - blinker=1.4=py39hca03da5_0
+  - boost=1.78.0=py39h99de9ae_4
+  - boost-cpp=1.78.0=hf1d6563_2
+  - brotli=1.1.0=hb547adb_0
+  - brotli-bin=1.1.0=hb547adb_0
   - brotlipy=0.7.0=py39h1a28f6b_1002
   - bzip2=1.0.8=h620ffc9_4
   - c-ares=1.19.0=h80987f9_0
-  - ca-certificates=2023.05.30=hca03da5_0
+  - ca-certificates=2023.7.22=hf0a4a13_0
   - cachetools=4.2.2=pyhd3eb1b0_0
-  - certifi=2023.7.22=py39hca03da5_0
+  - cairo=1.16.0=h73a0509_1014
+  - certifi=2023.7.22=pyhd8ed1ab_0
   - cffi=1.15.1=py39h80987f9_3
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - click=8.0.4=py39hca03da5_0
   - cryptography=41.0.2=py39h6204c90_0
+  - cycler=0.11.0=pyhd8ed1ab_0
   - decorator=5.1.1=pyhd3eb1b0_0
   - executing=0.8.3=pyhd3eb1b0_0
+  - expat=2.5.0=hb7217d7_1
   - flatbuffers=22.12.06=hb7217d7_2
+  - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
+  - font-ttf-inconsolata=3.000=h77eed37_0
+  - font-ttf-source-code-pro=2.038=h77eed37_0
+  - font-ttf-ubuntu=0.83=hab24e00_0
+  - fontconfig=2.14.2=h82840c6_0
+  - fonts-conda-ecosystem=1=0
+  - fonts-conda-forge=1=0
+  - fonttools=4.42.1=py39h0f82c59_0
+  - freetype=2.12.1=hd633e50_1
+  - freetype-py=2.3.0=pyhd8ed1ab_0
   - frozenlist=1.3.3=py39h80987f9_0
   - gast=0.4.0=pyhd3eb1b0_0
+  - gettext=0.21.1=h0186832_0
   - giflib=5.2.1=h80987f9_3
   - google-auth=2.6.0=pyhd3eb1b0_0
   - google-auth-oauthlib=0.4.4=pyhd3eb1b0_0
   - google-pasta=0.2.0=pyhd3eb1b0_0
+  - greenlet=2.0.2=py39h23fbdae_0
   - grpcio=1.51.1=py39h3adb8dc_1
   - h5py=3.9.0=py39haafd478_0
   - hdf5=1.12.1=h05c076b_3
   - icu=70.1=h6b3803e_0
   - idna=3.4=py39hca03da5_0
   - importlib-metadata=6.0.0=py39hca03da5_0
+  - importlib-resources=6.0.1=pyhd8ed1ab_0
+  - importlib_resources=6.0.1=pyhd8ed1ab_0
   - ipython=8.12.2=py39hca03da5_0
   - jedi=0.18.1=py39hca03da5_1
   - joblib=1.2.0=py39hca03da5_0
@@ -47,17 +68,26 @@ dependencies:
   - keras=2.11.0=py39hca03da5_0
   - keras-preprocessing=1.1.2=pyhd3eb1b0_0
   - krb5=1.20.1=hf3e1bf2_1
+  - lcms2=2.15=h481adae_0
+  - lerc=4.0.0=h9a09cb3_0
   - libabseil=20220623.0=cxx17_h28b99d4_6
   - libblas=3.9.0=17_osxarm64_openblas
+  - libbrotlicommon=1.1.0=hb547adb_0
+  - libbrotlidec=1.1.0=hb547adb_0
+  - libbrotlienc=1.1.0=hb547adb_0
   - libcblas=3.9.0=17_osxarm64_openblas
   - libcurl=8.1.1=h3e2b118_2
   - libcxx=14.0.6=h848a8c0_0
+  - libdeflate=1.17=h1a8c8d9_0
   - libedit=3.1.20221030=h80987f9_0
   - libev=4.33=h1a28f6b_1
+  - libexpat=2.5.0=hb7217d7_1
   - libffi=3.4.4=hca03da5_0
   - libgfortran=5.0.0=12_3_0_hd922786_1
   - libgfortran5=12.3.0=ha3a6a3e_1
+  - libglib=2.76.1=h4646484_0
   - libgrpc=1.51.1=hb15be72_1
+  - libiconv=1.17=he4db4b2_0
   - liblapack=3.9.0=17_osxarm64_openblas
   - liblapacke=3.9.0=17_osxarm64_openblas
   - libnghttp2=1.52.0=h62f6fdd_1
@@ -66,47 +96,63 @@ dependencies:
   - libprotobuf=3.21.12=hb5ab8b9_0
   - libsqlite=3.43.0=hb31c410_0
   - libssh2=1.10.0=h02f6b3c_2
+  - libtiff=4.5.0=h5dffbdd_2
+  - libwebp-base=1.3.1=hb547adb_0
+  - libxcb=1.13=h9b22ae9_1004
   - libzlib=1.2.13=h53f4e23_5
   - llvm-openmp=14.0.6=hc6e5704_0
   - markdown=3.4.1=py39hca03da5_0
   - markupsafe=2.1.1=py39h1a28f6b_0
+  - matplotlib-base=3.7.1=py39h35e9e80_0
   - matplotlib-inline=0.1.6=py39hca03da5_0
   - multidict=6.0.2=py39h1a28f6b_0
+  - munkres=1.1.4=pyh9f0ad1d_0
   - ncurses=6.4=h313beb8_0
   - numpy=1.25.2=py39h3b2db8e_0
   - numpy-base=1.25.2=py39ha9811e2_0
   - oauthlib=3.2.2=py39hca03da5_0
   - openblas=0.3.23=openmp_hf78f355_0
-  - openssl=3.0.10=h1a28f6b_2
+  - openjpeg=2.5.0=hbc2ba62_2
+  - openssl=3.1.2=h53f4e23_0
   - opt_einsum=3.3.0=pyhd3eb1b0_1
   - parso=0.8.3=pyhd3eb1b0_0
+  - pcre2=10.40=hb34f9b4_0
   - pexpect=4.8.0=pyhd3eb1b0_3
   - pickleshare=0.7.5=pyhd3eb1b0_1003
   - pip=23.2.1=py39hca03da5_0
+  - pixman=0.40.0=h27ca646_0
   - prompt-toolkit=3.0.36=py39hca03da5_0
   - protobuf=4.21.12=py39h23fbdae_0
+  - pthread-stubs=0.4=h27ca646_1001
   - ptyprocess=0.7.0=pyhd3eb1b0_2
   - pure_eval=0.2.2=pyhd3eb1b0_0
   - pyasn1=0.4.8=pyhd3eb1b0_0
   - pyasn1-modules=0.2.8=py_0
+  - pycairo=1.24.0=py39hfd21926_0
   - pycparser=2.21=pyhd3eb1b0_0
   - pygments=2.15.1=py39hca03da5_1
   - pyjwt=2.4.0=py39hca03da5_0
   - pyopenssl=23.2.0=py39hca03da5_0
   - pysocks=1.7.1=py39hca03da5_0
   - python=3.9.16=hea58f1e_0_cpython
+  - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python-flatbuffers=2.0=pyhd3eb1b0_0
+  - python-tzdata=2023.3=pyhd8ed1ab_0
   - python_abi=3.9=3_cp39
+  - pytz=2023.3=pyhd8ed1ab_0
   - re2=2023.02.01=hb7217d7_0
   - readline=8.2=h1a28f6b_0
+  - reportlab=4.0.4=py39h0f82c59_0
   - requests=2.31.0=py39hca03da5_0
   - requests-oauthlib=1.3.0=py_0
+  - rlpycairo=0.2.0=pyhd8ed1ab_0
   - rsa=4.7.2=pyhd3eb1b0_1
   - scikit-learn=1.3.0=py39h46d7db6_0
   - scipy=1.11.1=py39h20cbe94_0
   - setuptools=68.0.0=py39hca03da5_0
   - six=1.16.0=pyhd3eb1b0_1
   - snappy=1.1.9=hc377ac9_0
+  - sqlalchemy=1.4.49=py39h0f82c59_0
   - sqlite=3.41.2=h80987f9_0
   - stack_data=0.2.0=pyhd3eb1b0_0
   - tensorboard=2.11.0=py39hca03da5_0
@@ -120,29 +166,29 @@ dependencies:
   - tk=8.6.12=hb8d0fd4_0
   - traitlets=5.7.1=py39hca03da5_0
   - typing_extensions=4.7.1=py39hca03da5_0
+  - tzdata=2023c=h04d1e81_0
+  - unicodedata2=15.0.0=py39h02fc5c5_0
   - urllib3=1.26.16=py39hca03da5_0
   - wcwidth=0.2.5=pyhd3eb1b0_0
   - werkzeug=2.2.3=py39hca03da5_0
   - wheel=0.38.4=py39hca03da5_0
   - wrapt=1.14.1=py39h1a28f6b_0
+  - xorg-libxau=1.0.11=hb547adb_0
+  - xorg-libxdmcp=1.1.3=h27ca646_0
   - xz=5.4.2=h80987f9_0
   - yarl=1.8.1=py39h1a28f6b_0
   - zlib=1.2.13=h53f4e23_5
+  - zstd=1.5.5=h4f39d0f_0
   - pip:
       - contourpy==1.1.0
-      - cycler==0.11.0
-      - fonttools==4.42.1
-      - importlib-resources==6.0.1
       - kiwisolver==1.4.5
       - matplotlib==3.7.2
       - packaging==23.1
       - pandas==2.1.0
       - pillow==10.0.0
       - pyparsing==3.0.9
-      - python-dateutil==2.8.2
-      - pytz==2023.3
       - rdkit==2023.3.3
       - sklearn==0.0.post7
-      - tzdata==2023.3
+      - xgboost==1.7.6
       - zipp==3.16.2
 prefix: /Users/jordangewing-mullins/miniconda3/envs/cheminformatics
