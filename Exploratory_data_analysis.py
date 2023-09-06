@@ -189,6 +189,14 @@ def remove_outliers(df: pd.DataFrame, column_name: str, z_threshold=3):
 
     return filtered_df
 
+def canonicalize_dataframe(df: pd.DataFrame):
+    # The goal of this function is to put all the column names in alphabetical order so that we can avoid an additional hard coding step 
+    existing_columns = df.columns
+    sorted_columns = sorted(existing_columns)
+    # Create a mapping dictionary to rename columns alphabetically
+    rename_dict = {existing_columns[i]: sorted_columns[i] for i in range(len(existing_columns))}
+    canon_df = df.rename(columns=rename_dict)
+    return canon_df
 
 if __name__ == "__main__":
     featurized_data = add_features(df) # Add features to the data
@@ -214,7 +222,7 @@ if __name__ == "__main__":
     filtered_df = filtered_df.drop(columns=columns_to_remove)
     print(filtered_df)
 
-    df_to_feed_into_models = filtered_df.copy() 
+    df_to_feed_into_models = canonicalize_dataframe(filtered_df.copy()) 
     # I wanted to pass this variable directly to the build_model.py file, but I was having issues with that.
     # so I decided to just save the data into a new CSV and open it when building the model.
     df_to_feed_into_models.to_csv('cleaned_up_and_featurized_data.csv')
