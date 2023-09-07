@@ -18,3 +18,6 @@ Also from iPython you can use the command:
 > run build_model.py
 
 This will build a few different models and will then print out the dataframe containing the accuracy metrics for each model tested. This step should take ~10 minutes. I tried to train my model on a GPU, but the libraries I used appeared to be incompatible with GPU processing.
+
+# Interact with the command line to get predictions for your SMILES string
+> run permeability_prediction.py "<your_SMILES_string_here>"
