@@ -220,8 +220,7 @@ if __name__ == "__main__":
     columns_to_remove = features_to_transform + ['molregno', 'canonical_smiles','Papp_in_cm_sec','fingerprint']
     # Remove the specified columns from filtered_df
     filtered_df = filtered_df.drop(columns=columns_to_remove)
-    print(filtered_df)
-
+    # Canonicalize the dataframe
     df_to_feed_into_models = canonicalize_dataframe(filtered_df.copy()) 
     # I wanted to pass this variable directly to the build_model.py file, but I was having issues with that.
     # so I decided to just save the data into a new CSV and open it when building the model.

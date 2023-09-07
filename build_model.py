@@ -6,6 +6,7 @@ from custom_functions import *
 from scipy.stats import randint     
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
+import joblib
 import pickle
 
 # Read in the data from the CSV generated in Exploratory_data_analysis.py
@@ -36,11 +37,15 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     X_train_scaled = scaler.fit_transform(X_train)
 
     X_test_scaled = scaler.transform(X_test)
+    # Save the scaler to a file:
+    scaler_filename = 'LASSO_scaler.pkl'
+    with open(scaler_filename, 'wb') as scaler_file:
+        pickle.dump(scaler, scaler_file)
 
     # Create a range of alpha values to test
-    alphas = np.logspace(-6, 2, 100)
-    # Initialize LassoCV with 4-fold cross-validation
-    lasso_cv = LassoCV(alphas=alphas, cv=4, verbose=False)  
+    alphas = np.logspace(-4, 1, 45)
+    # Initialize LassoCV with 3-fold cross-validation
+    lasso_cv = LassoCV(alphas=alphas, cv=3, verbose=False)  
     # Fit LassoCV to the scaled training data
     lasso_cv.fit(X_train_scaled, y_train)
     # Get the selected alpha
@@ -57,6 +62,21 @@ def build_lasso_regression_model(df_to_feed_into_models: pd.DataFrame):
     y_pred = lasso_model.predict(X_test_scaled)
     mse = mean_squared_error(y_test, y_pred)
     r_squared = r2_score(y_test, y_pred)
+
+    # Save the Lasso model using joblib
+    joblib.dump(lasso_model, "lasso_model_permeability.pkl")
+
+    # Calculate residuals
+    residuals = y_test - y_pred
+
+    # Create a scatter plot of residuals vs. predicted values
+    plt.scatter(y_pred, residuals, alpha=0.5)
+    plt.title('Residuals vs. Predicted Values')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Residuals')
+    plt.axhline(0, color='red', linestyle='--', linewidth=1)
+    plt.savefig('LASSO_residuals.png')
+
     return (lasso_model, r_squared, mse)
 
 
@@ -84,6 +104,7 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
 
     if not interactions:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=84)
+        model_filename = "random_forest_model_permeability_no_interactions.pkl"
     
     else:
         # Here I'm making a subset of predictors that exclude all the chemical fingerprints 
@@ -119,6 +140,7 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
         df_combined = pd.concat([X, only_the_interactions], axis=1)
 
         X_train, X_test, y_train, y_test = train_test_split(df_combined, y, test_size=0.3, random_state=84)
+        model_filename = "random_forest_model_permeability_w_interactions.pkl"
 
     
     # Standardize the features
@@ -168,6 +190,7 @@ def build_random_forest_model(df_to_feed_into_models: pd.DataFrame, interactions
     
 
     best_estimator = random_search_narrowed.best_estimator_
+    joblib.dump(best_estimator, model_filename)
     y_pred = best_estimator.predict(X_test_scaled)
     r_squared_rf = r2_score(y_test, y_pred)
     mse_rf = mean_squared_error(y_test, y_pred)
@@ -200,6 +223,7 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
     if not interactions:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=84)
         scaler_filename = 'scaler_ensemble_no_interactions.pkl'
+        model_name = 'ensemble_model_no_interactions.pkl'
 
     elif interactions:
         print("examining interactions between non-fingerprint terms")
@@ -237,6 +261,7 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
 
         X_train, X_test, y_train, y_test = train_test_split(df_combined, y, test_size=0.3, random_state=84)
         scaler_filename = 'scaler_ensemble_interactions.pkl'
+        model_name = 'ensemble_model_w_interactions.pkl'
 
     # Standardize the features
     scaler = StandardScaler()
@@ -260,6 +285,7 @@ def ensemble_gradient_plus_random_forest(df_to_feed_into_models: pd.DataFrame, i
     ensemble_X = np.column_stack((rf_predictions, gb_predictions))  # Combine predictions
     ensemble_model = LinearRegression()  
     ensemble_model.fit(ensemble_X, y_test)
+    joblib.dump(ensemble_model, model_name)
 
     # Make predictions using the ensemble model
     ensemble_predictions = ensemble_model.predict(ensemble_X)
@@ -289,6 +315,9 @@ def build_gradient_boosting_model(df_to_feed_into_models: pd.DataFrame):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    scaler_filename = 'scaler_gradient_boosting.pkl'
+    with open(scaler_filename, 'wb') as scaler_file:
+        pickle.dump(scaler, scaler_file)
 
     # Initialize the Gradient Boosting Regressor
     gradient_boosting_model = GradientBoostingRegressor(
@@ -307,6 +336,8 @@ def build_gradient_boosting_model(df_to_feed_into_models: pd.DataFrame):
     # Evaluate the Gradient Boosting model's performance
     mse_gb = mean_squared_error(y_test, y_pred_gb)
     r_squared_gb = gradient_boosting_model.score(X_test_scaled, y_test)
+    model_name = 'gradient_boosting_model.pkl'
+    joblib.dump(gradient_boosting_model, model_name)
 
     return (gradient_boosting_model, r_squared_gb, mse_gb)
 
@@ -447,7 +478,7 @@ def build_neural_net(df_to_feed_into_models: pd.DataFrame, l2_penalty=None):
 
             # Train the neural network
             model.fit(X_train_combined_tf, y_train_tf, epochs=100, batch_size=32, verbose=1, validation_split=0.2)
-            model.save("neural_net_permeability.h5")
+            model.save("neural_net_permeability.pkl")
 
             # Evaluate the model on the test data
             mse_nn = model.evaluate(X_test_combined_tf, y_test_tf)
